@@ -1,0 +1,16 @@
+// Smooth scroll to sections
+function scrollToSection(id) {
+  document.getElementById(id).scrollIntoView({ behavior: "smooth" });
+}
+
+// Typing Effect
+const text = "A Creative Web Developer";
+let i = 0;
+function typingEffect() {
+  if (i < text.length) {
+    document.querySelector(".typewriter").textContent = text.slice(0, i+1);
+    i++;
+    setTimeout(typingEffect, 100);
+  }
+}
+window.onload = typingEffect;
