@@ -1,16 +1,191 @@
-// Smooth scroll to sections
-function scrollToSection(id) {
-  document.getElementById(id).scrollIntoView({ behavior: "smooth" });
-}
+/* =========================
+   Galaxy: stars + shooting stars
+   ========================= */
+const canvas = document.getElementById('sky');
+const ctx = canvas.getContext('2d');
+let W, H, stars = [], shooters = [], particlesEnabled = true;
 
-// Typing Effect
-const text = "A Creative Web Developer";
-let i = 0;
-function typingEffect() {
-  if (i < text.length) {
-    document.querySelector(".typewriter").textContent = text.slice(0, i+1);
-    i++;
-    setTimeout(typingEffect, 100);
+function resize() {
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+}
+window.addEventListener('resize', resize);
+resize();
+
+class Star {
+  constructor() { this.reset(true); }
+  reset(init=false){
+    this.x = Math.random()*W;
+    this.y = Math.random()*H;
+    this.r = Math.random()*1.6 + .2; // radius
+    this.s = Math.random()*0.3 + 0.05; // speed
+    this.a = Math.random()*0.6 + 0.4; // alpha
+    if(!init && Math.random()<0.5) this.y = -10; // respawn at top
+  }
+  draw(){
+    ctx.globalAlpha = this.a * (particlesEnabled ? 1 : 0.3);
+    ctx.beginPath();
+    ctx.arc(this.x,this.y,this.r,0,Math.PI*2);
+    ctx.fillStyle = '#ffffff';
+    ctx.fill();
+    // twinkle
+    if(Math.random()<0.01){ this.a = Math.min(1, this.a + 0.2); }
+    if(this.a>0.6){ this.a -= 0.005; }
+    ctx.globalAlpha = 1;
+  }
+  update(){
+    this.y += this.s;
+    if(this.y > H+10) this.reset();
+    this.draw();
   }
 }
-window.onload = typingEffect;
+
+class ShootingStar {
+  constructor(){
+    this.x = Math.random()*W * 0.7;
+    this.y = -20;
+    this.len = Math.random()*120 + 60;
+    this.speed = Math.random()*10 + 8;
+    this.thick = Math.random()*1.5 + .5;
+    this.hue = Math.random()<0.5 ? 190 : 310; // cyan/pink
+  }
+  draw(){
+    const grad = ctx.createLinearGradient(this.x, this.y, this.x+this.len, this.y+this.len*0.4);
+    grad.addColorStop(0, `hsla(${this.hue}, 100%, 80%, ${particlesEnabled ? 1 : .4})`);
+    grad.addColorStop(1, `hsla(${this.hue}, 100%, 50%, 0)`);
+    ctx.strokeStyle = grad;
+    ctx.lineWidth = this.thick;
+    ctx.beginPath();
+    ctx.moveTo(this.x, this.y);
+    ctx.lineTo(this.x+this.len, this.y+this.len*0.4);
+    ctx.stroke();
+  }
+  update(){
+    this.x += this.speed;
+    this.y += this.speed*0.4;
+    this.draw();
+  }
+  offscreen(){ return this.x - this.len > W || this.y - this.len > H; }
+}
+
+function initStars(n=240){ stars = Array.from({length:n}, ()=>new Star()); }
+initStars();
+
+function loop(){
+  ctx.clearRect(0,0,W,H);
+  // subtle space haze
+  ctx.globalAlpha = 0.06;
+  ctx.fillStyle = '#000314';
+  ctx.fillRect(0,0,W,H);
+  ctx.globalAlpha = 1;
+
+  stars.forEach(s => s.update());
+
+  // spawn shooting star occasionally
+  if(particlesEnabled && Math.random()<0.01){ shooters.push(new ShootingStar()); }
+  shooters = shooters.filter(s=>{
+    s.update();
+    return !s.offscreen();
+  });
+
+  requestAnimationFrame(loop);
+}
+loop();
+
+/* =========================
+   Typing effect
+   ========================= */
+const roles = ["Creative Developer", "UI Animator", "Web Designer", "Problem Solver"];
+const typedEl = document.getElementById('typed');
+let r = 0, i = 0, deleting = false;
+
+function typeCycle(){
+  const current = roles[r];
+  typedEl.textContent = current.slice(0, i);
+  if(!deleting && i < current.length){ i++; }
+  else if(deleting && i>0){ i--; }
+  else if(i===current.length){ deleting = true; setTimeout(typeCycle, 1200); return; }
+  else{ deleting = false; r = (r+1)%roles.length; }
+  setTimeout(typeCycle, deleting ? 40 : 90);
+}
+typeCycle();
+
+/* =========================
+   Reveal on scroll + counters + skill bars
+   ========================= */
+const observer = new IntersectionObserver((entries)=>{
+  entries.forEach(entry=>{
+    if(entry.isIntersecting){
+      entry.target.classList.add('visible');
+
+      // counters
+      if(entry.target.classList.contains('stat')){
+        const span = entry.target.querySelector('.counter');
+        if(span && !span.dataset.done){
+          span.dataset.done = "1";
+          const target = +span.dataset.count || 0;
+          let val = 0;
+          const step = Math.max(1, Math.floor(target/60));
+          const tick = ()=>{ val += step; if(val>=target) val = target; span.textContent = val;
+            if(val<target) requestAnimationFrame(tick); };
+          tick();
+        }
+      }
+
+      // skill bars
+      if(entry.target.classList.contains('skills')){
+        entry.target.querySelectorAll('.bar span').forEach(el=>{
+          const w = el.getAttribute('data-width');
+          requestAnimationFrame(()=> el.style.width = w);
+        });
+      }
+    }
+  });
+},{ threshold:.15 });
+
+document.querySelectorAll('.reveal, .reveal-pop, .stat, .skills').forEach(el=>observer.observe(el));
+
+/* =========================
+   Hover tilt (lightweight)
+   ========================= */
+document.querySelectorAll('.hover-tilt').forEach(card=>{
+  let rect;
+  const damp = 18;
+  function set(e){
+    rect = card.getBoundingClientRect();
+    const x = (e.clientX - rect.left)/rect.width - .5;
+    const y = (e.clientY - rect.top)/rect.height - .5;
+    card.style.transform = `perspective(900px) rotateX(${(-y*damp)}deg) rotateY(${x*damp}deg) translateZ(0)`;
+  }
+  function reset(){ card.style.transform = 'perspective(900px) rotateX(0) rotateY(0)'; }
+  card.addEventListener('mousemove', set);
+  card.addEventListener('mouseleave', reset);
+});
+
+/* =========================
+   Nav active + smooth scroll
+   ========================= */
+const links = [...document.querySelectorAll('.navlink')];
+const sections = links.map(a => document.querySelector(a.getAttribute('href')));
+function setActive(){
+  const pos = window.scrollY + window.innerHeight/3;
+  let idx = 0;
+  sections.forEach((sec,i)=>{ if(sec.offsetTop <= pos) idx = i; });
+  links.forEach((l,i)=> l.classList.toggle('active', i===idx));
+}
+setActive();
+window.addEventListener('scroll', setActive);
+
+links.forEach(a=>{
+  a.addEventListener('click', e=>{
+    e.preventDefault();
+    document.querySelector(a.getAttribute('href')).scrollIntoView({behavior:'smooth', block:'start'});
+  });
+});
+
+/* =========================
+   Toggle particles (if needed)
+   ========================= */
+document.querySelector('.theme-toggle').addEventListener('click', ()=>{
+  particlesEnabled = !particlesEnabled;
+});
