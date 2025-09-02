@@ -1,0 +1,138 @@
+/* Import Fonts */
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Poppins', sans-serif;
+  background: linear-gradient(135deg, #2a0845, #6441A5);
+  color: #fff;
+  scroll-behavior: smooth;
+}
+
+/* Navbar */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.3);
+  position: sticky;
+  top: 0;
+}
+.nav-links {
+  list-style: none;
+  display: flex;
+  gap: 20px;
+}
+.nav-links a {
+  color: #fff;
+  text-decoration: none;
+  font-weight: 500;
+  transition: 0.3s;
+}
+.nav-links a:hover {
+  color: #ff6ec7;
+}
+
+/* Hero Section */
+.hero {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  background: url('https://images.unsplash.com/photo-1518770660439-4636190af475') no-repeat center/cover;
+}
+.intro-text {
+  font-size: 3rem;
+  font-family: 'Great Vibes', cursive;
+}
+.highlight {
+  color: #ff6ec7;
+}
+.typewriter {
+  font-size: 1.5rem;
+  margin-top: 10px;
+  color: #ffd700;
+  animation: blink 1s infinite;
+}
+@keyframes blink {
+  50% { opacity: 0; }
+}
+.btn {
+  margin-top: 20px;
+  padding: 12px 25px;
+  font-size: 1rem;
+  border: none;
+  background: linear-gradient(45deg, #ff6ec7, #ff9a8b);
+  color: #fff;
+  border-radius: 30px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+.btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 20px #ff6ec7;
+}
+
+/* About Section */
+.about {
+  padding: 80px 20px;
+  text-align: center;
+}
+.about h2 {
+  font-size: 2.5rem;
+  margin-bottom: 20px;
+}
+
+/* Projects Section */
+.projects {
+  padding: 80px 20px;
+  text-align: center;
+}
+.project-cards {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+.card {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 20px;
+  border-radius: 15px;
+  width: 250px;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+.card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 0 20px #ff6ec7;
+}
+
+/* Contact Section */
+.contact {
+  padding: 80px 20px;
+  text-align: center;
+}
+.contact form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  max-width: 400px;
+  margin: auto;
+}
+.contact input, .contact textarea {
+  padding: 12px;
+  border: none;
+  border-radius: 10px;
+  outline: none;
+}
+.contact button {
+  background: linear-gradient(45deg, #00c6ff, #0072ff);
+}
+
+/* Footer */
+footer {
+  text-align: center;
+  padding: 20px;
+  background: #111;
+  font-size: 0.9rem;
+}
